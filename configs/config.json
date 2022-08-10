@@ -1,0 +1,9 @@
+{
+    "port": ":5001",
+    "logFilePath":"hemantMensSalonBot.log",
+    "mysql": {
+        "driverName": "mysql",
+        "dataSourceName": ""
+    },
+    "apiep": "http://1375-2406-7400-51-7970-b92e-2fd-52ee-1c74.ngrok.io/hemantMensSalon/"
+}

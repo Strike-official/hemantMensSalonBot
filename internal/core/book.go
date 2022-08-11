@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Strike-official/hemantMensSalonBot/internal/model"
+	"github.com/Strike-official/hemantMensSalonBot/pkg/payment"
 	"github.com/strike-official/go-sdk/strike"
 )
 
@@ -69,7 +71,7 @@ func SlotSelection(req model.Request_Structure) *strike.Response_structure {
 		} else if curTime.Hour() < 15 {
 			slot = 2
 			fmt.Println(slot)
-		} else if curTime.Hour() < 20 {
+		} else if curTime.Hour() <= 24 {
 			slot = 3
 			slots = getSlots(totalTime, slot)
 		}
@@ -100,15 +102,6 @@ func SlotSelection(req model.Request_Structure) *strike.Response_structure {
 			AddTextRowToAnswer(strike.H3, "Payment Amount: Rs"+strconv.Itoa(s.Cost), "#212121", false)
 	}
 	return strikeObject
-}
-
-func PaymentPortal(req model.Request_Structure) *strike.Response_structure {
-
-	paymentDetails := req.User_session_variables.PaymentDetails
-
-	fmt.Println("Payment Amount: ", paymentDetails[0])
-	return nil
-
 }
 
 // return
@@ -152,4 +145,81 @@ func getSlots(totalTime, slot int) *[]model.SlotDetails {
 	sm = append(sm, *sample2)
 
 	return &sm
+}
+
+func PaymentPortal(request model.Request_Structure) *strike.Response_structure {
+
+	paymentDetails := request.User_session_variables.PaymentDetails
+
+	paymentStringArr := strings.Split(paymentDetails[0], ": Rs")
+	paymentInt, _ := strconv.Atoi(paymentStringArr[1])
+	// Get payment link from payment gateway
+	payeeData := payment.PayeeData{
+		PayeePrefix:      request.Bybrisk_session_variables.BusinessId,
+		PayeeDisplayName: "Hemant Men's Salon",
+		PaymentAmount:    paymentInt,
+	}
+
+	linkResponse := payment.RequestPaymentLink(request, payeeData)
+
+	strikeObject := strike.Create("getting_started", model.Conf.APIEp+"payment/confirm_payment?linkid="+linkResponse.LinkID+"&linkurl="+linkResponse.LinkURL)
+
+	question_object1 := strikeObject.Question("payment_confirmation").QuestionText().
+		SetTextToQuestion("Hi "+request.Bybrisk_session_variables.Username+", click the link below to proceed with the payment.", "Text Description, getting used for testing purpose.")
+
+	if linkResponse.LinkURL == "PAYMENT FAILED" {
+		question_object1.Answer(false).AnswerCardArray(strike.VERTICAL_ORIENTATION).
+			AnswerCard().SetHeaderToAnswer(10, strike.HALF_WIDTH).
+			AddGraphicRowToAnswer(strike.PICTURE_ROW, []string{"https://m.media-amazon.com/images/I/71xyy-CkuUL._AC_SL1500_.jpg"}, []string{}).
+			AddTextRowToAnswer(strike.H4, linkResponse.LinkURL, "#b56a00", false).
+			AddTextRowToAnswer(strike.H5, "It's not you it's us, please try again.", "#343b40", false)
+	} else {
+		question_object1.Answer(false).AnswerCardArray(strike.VERTICAL_ORIENTATION).
+			AnswerCard().SetHeaderToAnswer(10, strike.FULL_WIDTH).
+			AddGraphicRowToAnswer(strike.PICTURE_ROW, []string{"https://ecommercenews.eu/wp-content/uploads/2013/06/most_common_payment_methods_in_europe.png"}, []string{}).
+			AddTextRowToAnswer(strike.H4, linkResponse.LinkURL, "#0285d6", false).
+			AddTextRowToAnswer(strike.H5, "After payment click on confirm below to complete the booking", "#343b40", false).
+			AnswerCard().SetHeaderToAnswer(1, strike.HALF_WIDTH).
+			AddTextRowToAnswer(strike.H4, "Confirm ✅", "#438c46", true)
+	}
+
+	return strikeObject
+
+}
+
+func ConfirmPaymentStatus(request model.Request_Structure, linkID, linkURL string) *strike.Response_structure {
+	status := payment.GetPaymentStatus(linkID)
+	strikeObject := strike.Create("getting_started", model.Conf.APIEp+"payment/confirm_payment?linkid="+linkID+"&linkurl="+linkURL)
+
+	if status == "PAID" {
+		strikeObject.Question("").
+			QuestionCard().SetHeaderToQuestion(10, strike.HALF_WIDTH).
+			AddTextRowToQuestion(strike.H4, "Great", "#438c46", true).
+			AddTextRowToQuestion(strike.H4, "Your booking is successful", "#3c3d3c", false)
+	} else if status == "ACTIVE" {
+		strikeObject.Question("payment_reconfirm").
+			QuestionCard().SetHeaderToQuestion(2, strike.HALF_WIDTH).
+			AddTextRowToQuestion(strike.H4, "Oops!", "#3c3d3c", true).
+			AddTextRowToQuestion(strike.H4, "Your payment is still pending", "#3c3d3c", false).
+			AddTextRowToQuestion(strike.H4, linkURL, "#0285d6", false).
+			AddTextRowToQuestion(strike.H5, "Retry confirming after payment is done", "#3c3d3c", false).
+			Answer(true).AnswerCardArray(strike.VERTICAL_ORIENTATION).AnswerCard().SetHeaderToAnswer(1, strike.HALF_WIDTH).
+			AddTextRowToAnswer(strike.H4, "Confirm ✅", "#438c46", true)
+	} else if status == "EXPIRED" {
+		strikeObject.Question("payment_reconfirm").
+			QuestionCard().SetHeaderToQuestion(2, strike.HALF_WIDTH).
+			AddTextRowToQuestion(strike.H4, "Oops!", "#3c3d3c", true).
+			AddTextRowToQuestion(strike.H4, "Your payment link is expired", "#3c3d3c", false).
+			AddTextRowToQuestion(strike.H5, "Retry confirming after payment is done", "#3c3d3c", false).
+			Answer(true).AnswerCardArray(strike.VERTICAL_ORIENTATION).AnswerCard().SetHeaderToAnswer(1, strike.HALF_WIDTH).
+			AddTextRowToAnswer(strike.H4, "Confirm ✅", "#438c46", true)
+	} else {
+		strikeObject.Question("payment_reconfirm").
+			QuestionCard().SetHeaderToQuestion(2, strike.HALF_WIDTH).
+			AddTextRowToQuestion(strike.H4, "Oops!", "#3c3d3c", true).
+			AddTextRowToQuestion(strike.H4, "Some error occured", "#3c3d3c", false).
+			AddTextRowToQuestion(strike.H5, "Retry confirming after payment is done", "#3c3d3c", false)
+	}
+
+	return strikeObject
 }

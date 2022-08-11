@@ -9,7 +9,6 @@ import (
 
 	"github.com/Strike-official/hemantMensSalonBot/configmanager"
 	"github.com/Strike-official/hemantMensSalonBot/internal/model"
-	"github.com/Strike-official/hemantMensSalonBot/pkg/mysql"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,13 +24,13 @@ func main() {
 	logFile := initLogger(model.Conf.LogFilePath)
 
 	// Init DB Connection
-	mysql.ConnectToRDS()
-	defer mysql.ConnClose()
+	// mysql.ConnectToRDS()
+	// defer mysql.ConnClose()
 
 	// Init slotDetails
 	model.SlotDetail = make(map[string]map[string]map[int]model.SlotTime)
 	model.SalonOpeningTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-10 09:00:00", time.Local)
-	model.SalonClosingTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-10 20:00:00", time.Local)
+	model.SalonClosingTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-10 21:00:00", time.Local)
 	fmt.Printf("Salon OpeningTime = %+v and ClosingTime= %+v", model.SalonOpeningTime, model.SalonClosingTime)
 
 	// Init Routes

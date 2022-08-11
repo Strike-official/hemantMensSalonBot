@@ -34,3 +34,14 @@ func PaymentPortal(ctx *gin.Context) {
 	strikeObj := core.PaymentPortal(request)
 	ctx.JSON(200, strikeObj)
 }
+
+func ConfirmPayment(ctx *gin.Context) {
+	var request model.Request_Structure
+	if err := ctx.BindJSON(&request); err != nil {
+		fmt.Println("Error:", err)
+	}
+	linkID := ctx.Query("linkid")
+	linkurl := ctx.Query("linkurl")
+	strikeObj := core.ConfirmPaymentStatus(request, linkID, linkurl)
+	ctx.JSON(200, strikeObj)
+}

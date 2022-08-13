@@ -7,10 +7,14 @@ import (
 )
 
 type AppConfig struct {
-	Port        string `json:"port"`
-	LogFilePath string `json:"logFilePath"`
-	Mysql       Mysql  `json:"mysql"`
-	APIEp       string `json:"apiep"`
+	Port           string `json:"port"`
+	LogFilePath    string `json:"logFilePath"`
+	Mysql          Mysql  `json:"mysql"`
+	APIEp          string `json:"apiep"`
+	PaymentLinkURL string `json:"paymentLinkURL"`
+	XApiVersion    string `json:"x-Api-Version"`
+	XClientId      string `json:"x-Client-Id"`
+	XClientSecret  string `json:"x-Client-Secret"`
 }
 
 type Mysql struct {

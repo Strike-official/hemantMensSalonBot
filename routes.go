@@ -20,6 +20,7 @@ func initializeRoutes(router *gin.Engine) {
 		cb.POST("/slotSelection", controller.SlotSelection)
 		// // Book > Select Services > Slots > PaymentGateway
 		cb.POST("/paymentLink", controller.PaymentPortal)
+		cb.POST("/payment/confirm_payment", controller.ConfirmPayment)
 
 		// Cancel
 

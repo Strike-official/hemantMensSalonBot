@@ -1,10 +1,11 @@
 module github.com/Strike-official/hemantMensSalonBot
 
-go 1.18
+go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/google/uuid v1.3.0
 	github.com/strike-official/go-sdk/strike v0.0.0-20211210093841-48996bec187c
 )
 

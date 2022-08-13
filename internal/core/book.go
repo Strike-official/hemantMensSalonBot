@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,6 +16,7 @@ import (
 func BookAppointment(req model.Request_Structure) *strike.Response_structure {
 	strikeObject := strike.Create("slotSelection", model.Conf.APIEp+"slotSelection")
 
+	log.Println("URL: ", model.Conf.APIEp+"slotSelection")
 	question_object := strikeObject.Question("selectedServices").
 		QuestionCard().SetHeaderToQuestion(1, strike.FULL_WIDTH).AddTextRowToQuestion(strike.H3, "Hi "+req.Bybrisk_session_variables.Username+", What services would you like to opt? (long press to select multiple services)", "#2B4865", false)
 
@@ -66,12 +68,13 @@ func SlotSelection(req model.Request_Structure) *strike.Response_structure {
 	var slots *[]model.SlotDetails
 	if currentTimeStr < closingTimeStr {
 		fmt.Println("Salon is Open!")
-		if curTime.Hour() < 12 {
-			slot = 1
-		} else if curTime.Hour() < 15 {
-			slot = 2
-			fmt.Println(slot)
-		} else if curTime.Hour() <= 24 {
+		// if curTime.Hour() < 12 {
+		// 	slot = 1
+		// } else if curTime.Hour() < 15 {
+		// 	slot = 2
+		// 	fmt.Println(slot)
+		// }
+		if curTime.Hour() <= 24 {
 			slot = 3
 			slots = getSlots(totalTime, slot)
 		}

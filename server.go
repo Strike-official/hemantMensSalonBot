@@ -29,8 +29,8 @@ func main() {
 
 	// Init slotDetails
 	model.SlotDetail = make(map[string]map[string]map[int]model.SlotTime)
-	model.SalonOpeningTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-10 09:00:00", time.Local)
-	model.SalonClosingTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-10 21:00:00", time.Local)
+	model.SalonOpeningTime, _ = time.ParseInLocation(model.TimeLatout, "2022-08-12 00:00:00", time.Local)
+	model.SalonClosingTime, _ = time.ParseInLocation(model.TimeLatout, "2023-08-12 23:59:59", time.Local)
 	fmt.Printf("Salon OpeningTime = %+v and ClosingTime= %+v", model.SalonOpeningTime, model.SalonClosingTime)
 
 	// Init Routes
